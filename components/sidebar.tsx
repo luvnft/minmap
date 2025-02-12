@@ -67,14 +67,11 @@ export const Sidebar: React.FC<SidebarProps> = (props) => {
 
   const sidebarContent = (
     <div className={SidebarStyles.sidebarContent}>
-      <h1>&#127922;&#127922;<br/> Craps Table Minimum Map </h1>
+      <h1>&#127922;&#127922;<br/> Casino W3W Map </h1>
       <p>
-        This map plots the typical table minimums at casinos in the United States. Data
-        shown is collected directly from{" "}
-        <a target="_blank" rel="noopener noreferrer" href="https://www.reddit.com/r/Craps/">/r/Craps</a>{"' "}
-        <a target="_blank" rel="noopener noreferrer" href={props.links.spreadsheetDirect}>Spreadsheet of Minimums</a>,
-        which is maintained by{" "}
-        <a target="_blank" rel="noopener noreferrer" href="https://twitter.com/cochran10">@cochran10</a>.
+        This map plots the typical table minimums at casinos in the United States.
+        Follow us on{" "}
+        <a target="_blank" rel="noopener noreferrer" href="https://tiktok.com">@casinow3w</a>.
       </p>
       <p>
         {isTap ? "Tap" : "Click on"} a location on the map to see more information about it.{" "}
