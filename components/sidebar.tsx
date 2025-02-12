@@ -4,171 +4,164 @@ import classNames from "classnames";
 import { useMediaQuery } from "react-responsive";
 
 import { faGithub } from "@fortawesome/free-brands-svg-icons";
-import {
-  faBars,
-  faLocationCrosshairs,
-  faTimes,
-} from "@fortawesome/free-solid-svg-icons";
+import { faBars, faLocationCrosshairs, faTimes } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
-import {
-  Casino,
-  TimeFrame,
-} from "../interface/casino";
+import { Casino, TimeFrame } from "../interface/casino";
 import { SidebarLinks } from "../interface/links";
 import SidebarStyles from "../styles/Sidebar.module.scss";
 import { ColorKey } from "./colorKey";
-import {
-  ColorScheme,
-  ColorSchemeRadioButtons,
-} from "./colorSchemeRadioButtons";
+import { ColorScheme, ColorSchemeRadioButtons } from "./colorSchemeRadioButtons";
 import { Search } from "./search";
 import { TimeframeRadioButtons } from "./timeframeRadioButtons";
 
 export type SidebarToggleMethod = "pageLoad" | "clickShow" | "clickHide" | "searchHide" | "buttonHide";
 
 type SidebarProps = {
-  shown?: boolean  /* If undefined, determine visibility by media query */
-  setShown: (s: boolean, method: SidebarToggleMethod) => void
-  selectedTimeframe: TimeFrame
-  selectTimeframe: (t: TimeFrame) => void
-  selectedColorScheme: ColorScheme
-  selectColorScheme: (t: ColorScheme) => void
-  casinos: Casino[]
-  scrollTo: (casino: Casino) => void
-  links: SidebarLinks
-  lastUpdateJsonUtc: string
-}
+  shown?: boolean; /* If undefined, determine visibility by media query */
+  setShown: (s: boolean, method: SidebarToggleMethod) => void;
+  selectedTimeframe: TimeFrame;
+  selectTimeframe: (t: TimeFrame) => void;
+  selectedColorScheme: ColorScheme;
+  selectColorScheme: (t: ColorScheme) => void;
+  casinos: Casino[];
+  scrollTo: (casino: Casino) => void;
+  links: SidebarLinks;
+  lastUpdateJsonUtc: string;
+};
 
 type SidebarState = {
-  missingCasinosShown: boolean
-}
+  missingCasinosShown: boolean;
+};
 
 export const Sidebar: React.FC<SidebarProps> = (props) => {
-  /* On smaller screens, hide the sidebar at page load. We have to useEffect here instead of passing
-   * the matchMedia to useState above because `window` is not available for SSR. Also,
-   * useMediaQuery does not appear to work for initialState, likely also due to SSR issues. */
   React.useEffect(() => {
     props.setShown(!shouldHideByDefault(), "pageLoad");
-  }, []);  /* No deps => only runs at first render */
+  }, []); // No deps => only runs at first render
 
-  const [state, setState] = React.useState<SidebarState>({missingCasinosShown: false});
+  const [state, setState] = React.useState<SidebarState>({ missingCasinosShown: false });
 
-  /* Fix React/Vercel SSR bug - https://github.com/vercel/next.js/discussions/38263 */
   const [mounted, setMounted] = React.useState(false);
   const [updateTimeLocalized, setUpdateTimeLocalized] = React.useState(props.lastUpdateJsonUtc);
+
   React.useEffect(() => {
     setUpdateTimeLocalized(() => new Date(props.lastUpdateJsonUtc).toLocaleString());
     props.selectTimeframe(timeframeOfCurrentTime());
     setMounted(true);
-  }, [props.lastUpdateJsonUtc])
+  }, [props.lastUpdateJsonUtc, props.selectTimeframe]); // Ensure dependencies are correctly added
 
   const isTap = useMediaQuery({ query: "(hover: none)" }) && mounted;
 
-  const sidebarContent = (
-    <div className={SidebarStyles.sidebarContent}>
-      <h1>&#127922;&#127922;<br/> Casino W3W Map </h1>
-      <p>
-        This map plots the typical table minimums at casinos in the United States.
-        Follow us on{" "}
-        <a target="_blank" rel="noopener noreferrer" href="https://tiktok.com">@casinow3w</a>.
-      </p>
-      <p>
-        {isTap ? "Tap" : "Click on"} a location on the map to see more information about it.{" "}
-        {isTap ? "Tap" : "Click"} the <FontAwesomeIcon style={{height: "1em", display: "inline"}} icon={faLocationCrosshairs}/> button in the lower left to scroll to your current location.
-      </p>
-      <p>
-        <b>All data is user-reported and not guaranteed to be accurate.</b> If any data is incorrect
-        or missing,{" "}
-        <a target="_blank" rel="noopener noreferrer" href={props.links.spreadsheetComments}><b>please report it here!</b></a>
-      </p>
-
-      <div className={SidebarStyles.searchContainer}>
-        <h2>Search</h2>
-        <Search casinos={props.casinos} onSelect={(c) => {
-          if (shouldHideByDefault()) props.setShown(false, "searchHide");
-          props.scrollTo(c);
-        }}/>
-      </div>
-
-      <h2>Map Settings</h2>
-      <div className={SidebarStyles.timeframeSelect}>
-        <h3>Color markers by minimums as of:</h3>
-        <TimeframeRadioButtons
-          value={props.selectedTimeframe}
-          update={(t) => {
-            if (shouldHideByDefault()) props.setShown(false, "buttonHide");
-            props.selectTimeframe(t);
-          }}
-        />
-        <h3>Marker color scheme:</h3>
-        <ColorSchemeRadioButtons
-          value={props.selectedColorScheme}
-          update={(t) => {
-            if (shouldHideByDefault()) props.setShown(false, "buttonHide");
-            props.selectColorScheme(t);
-          }}
-        />
-        <ColorKey scheme={props.selectedColorScheme}/>
-      </div>
-
-      {state.missingCasinosShown &&
-        <textarea className={SidebarStyles.missingCasinos} value={
-          "Casinos that are Missing Coordinates:\n" + props.casinos
-            .filter(c => c.coords === null)
-            .map(c => c.city + ", " + c.state + ": " + c.name)
-            .join("\n")
-        }/>
-      }
-
   return (
     <>
-    {/* SHOW button */}
-    <div
-      className={classNames(
-        "leaflet-control",
-        SidebarStyles.sidebarButton,
-        { [SidebarStyles.shown]: props.shown }
-      )}
-      onClick={() => props.setShown(!props.shown, props.shown ? "clickHide" : "clickShow")}
-    >
-      <FontAwesomeIcon icon={faBars}/>
-    </div>
-    <div
-      className={classNames(
-        SidebarStyles.sidebar,
-        { [SidebarStyles.shown]: props.shown }
-      )}
-    >
-      {/* CLOSE button */}
-      <button
-        className={SidebarStyles.sidebarCloseButton}
-        onClick={() => props.setShown(false, "clickHide")}
+      {/* SHOW button */}
+      <div
+        className={classNames("leaflet-control", SidebarStyles.sidebarButton, {
+          [SidebarStyles.shown]: props.shown,
+        })}
+        onClick={() => props.setShown(!props.shown, props.shown ? "clickHide" : "clickShow")}
       >
-        <FontAwesomeIcon icon={faTimes}/>
-      </button>
+        <FontAwesomeIcon icon={faBars} />
+      </div>
 
-      {sidebarContent}
-    </div>
+      <div className={classNames(SidebarStyles.sidebar, { [SidebarStyles.shown]: props.shown })}>
+        {/* CLOSE button */}
+        <button
+          className={SidebarStyles.sidebarCloseButton}
+          onClick={() => props.setShown(false, "clickHide")}
+        >
+          <FontAwesomeIcon icon={faTimes} />
+        </button>
+
+        {/* Sidebar Content */}
+        <div className={SidebarStyles.sidebarContent}>
+          <h1>&#127922;&#127922;<br /> Casino W3W Map </h1>
+          <p>
+            This map plots the typical table minimums at casinos in the United States.
+            Follow us on{" "}
+            <a target="_blank" rel="noopener noreferrer" href="https://tiktok.com">@casinow3w</a>.
+          </p>
+          <p>
+            {isTap ? "Tap" : "Click on"} a location on the map to see more information about it.{" "}
+            {isTap ? "Tap" : "Click"} the{" "}
+            <FontAwesomeIcon style={{ height: "1em", display: "inline" }} icon={faLocationCrosshairs} />{" "}
+            button in the lower left to scroll to your current location.
+          </p>
+          <p>
+            <b>All data is user-reported and not guaranteed to be accurate.</b> If any data is incorrect
+            or missing,{" "}
+            <a target="_blank" rel="noopener noreferrer" href={props.links.spreadsheetComments}>
+              <b>please report it here!</b>
+            </a>
+          </p>
+
+          <div className={SidebarStyles.searchContainer}>
+            <h2>Search</h2>
+            <Search
+              casinos={props.casinos}
+              onSelect={(c) => {
+                if (shouldHideByDefault()) props.setShown(false, "searchHide");
+                props.scrollTo(c);
+              }}
+            />
+          </div>
+
+          <h2>Map Settings</h2>
+          <div className={SidebarStyles.timeframeSelect}>
+            <h3>Color markers by minimums as of:</h3>
+            <TimeframeRadioButtons
+              value={props.selectedTimeframe}
+              update={(t) => {
+                if (shouldHideByDefault()) props.setShown(false, "buttonHide");
+                props.selectTimeframe(t);
+              }}
+            />
+            <h3>Marker color scheme:</h3>
+            <ColorSchemeRadioButtons
+              value={props.selectedColorScheme}
+              update={(t) => {
+                if (shouldHideByDefault()) props.setShown(false, "buttonHide");
+                props.selectColorScheme(t);
+              }}
+            />
+            <ColorKey scheme={props.selectedColorScheme} />
+          </div>
+
+          {state.missingCasinosShown && (
+            <textarea
+              className={SidebarStyles.missingCasinos}
+              value={
+                "Casinos that are Missing Coordinates:\n" +
+                props.casinos
+                  .filter((c) => c.coords === null)
+                  .map((c) => c.city + ", " + c.state + ": " + c.name)
+                  .join("\n")
+              }
+              readOnly
+            />
+          )}
+        </div>
+      </div>
     </>
   );
-}
+};
 
-const shouldHideByDefault = () => {
-  return window.matchMedia("(max-width: 960px)").matches;
-}
+const shouldHideByDefault = (): boolean => {
+  return typeof window !== "undefined" && window.matchMedia("(max-width: 960px)").matches;
+};
 
-const timeframeOfCurrentTime = () => {
+const timeframeOfCurrentTime = (): TimeFrame => {
   const now = new Date();
 
   const isNight = now.getHours() >= 18 || now.getHours() <= 5;
-  const isWeekend = now.getDay() == 0 /* Sunday */
-    || now.getDay() == 6 /* Saturday */
-    || (isNight && now.getDay() == 5); /* Friday (but only Friday night counts as a weekend) */
+  const isWeekend =
+    now.getDay() === 0 /* Sunday */ ||
+    now.getDay() === 6 /* Saturday */ ||
+    (isNight && now.getDay() === 5); /* Friday (but only Friday night counts as a weekend) */
 
   if (isNight) {
     return isWeekend ? TimeFrame.WEEKENDNIGHT : TimeFrame.WEEKNIGHT;
   } else {
     return isWeekend ? TimeFrame.WEEKEND : TimeFrame.WEEKDAY;
   }
-}
+};
