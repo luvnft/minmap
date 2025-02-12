@@ -112,20 +112,6 @@ export const Sidebar: React.FC<SidebarProps> = (props) => {
         <ColorKey scheme={props.selectedColorScheme}/>
       </div>
 
-      <div className={SidebarStyles.linkIcons}>
-        <a target="_blank" rel="noopener noreferrer" href="https://github.com/joshuaprince/minmap" title={"GitHub"}
-           onClick={(e) => {
-             /* Secret developer display - hold Shift and Ctrl and click the Github icon */
-             if (e.ctrlKey && e.shiftKey) {
-               e.preventDefault();
-               setState(s => ({...s, missingCasinosShown: !s.missingCasinosShown}));
-             }
-           }}
-        >
-          <FontAwesomeIcon icon={faGithub}/>
-        </a>
-      </div>
-
       {state.missingCasinosShown &&
         <textarea className={SidebarStyles.missingCasinos} value={
           "Casinos that are Missing Coordinates:\n" + props.casinos
@@ -134,32 +120,6 @@ export const Sidebar: React.FC<SidebarProps> = (props) => {
             .join("\n")
         }/>
       }
-
-      <div className={SidebarStyles.attributions}>
-        <div>
-          Last sync with <a target="_blank" rel="noopener noreferrer" href={props.links.spreadsheetDirect}>spreadsheet</a>: {updateTimeLocalized}
-        </div>
-        <div>
-          Map built by <a target="_blank" rel="noopener noreferrer" href="https://github.com/joshuaprince">Joshua Prince</a>.
-        </div>
-        <div>
-          Data maintained by <a target="_blank" rel="noopener noreferrer" href="https://twitter.com/cochran10">@cochran10</a>.
-        </div>
-        <p>
-          Libraries used include:{" "}
-          <a target="_blank" rel="noopener noreferrer" href="https://reactjs.org/">React</a>,{" "}
-          <a target="_blank" rel="noopener noreferrer" href="https://nextjs.org/">Next</a>,{" "}
-          <a target="_blank" rel="noopener noreferrer" href="https://leafletjs.com/">Leaflet</a>,{" "}
-          <a target="_blank" rel="noopener noreferrer" href="https://osm.org/">OpenStreetMap</a>,{" "}
-          <a target="_blank" rel="noopener noreferrer" href="https://fontawesome.com/">Font Awesome</a>.{" "}
-        </p>
-        <div>
-          <a target="_blank" rel="noopener noreferrer" href="https://icons8.com/icon/35544/chip">Chip</a> favicon by <a target="_blank" rel="noopener noreferrer" href="https://icons8.com">Icons8</a>.{" "}
-          <a target="_blank" rel="noopener noreferrer" href="https://www.vecteezy.com/free-vector/poker-chip">Poker Chip Vectors by Vecteezy</a>.
-        </div>
-      </div>
-    </div>
-  );
 
   return (
     <>
